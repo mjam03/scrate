@@ -1,0 +1,25 @@
+name: review
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - autopep8
+  - category_encoders
+  - jupyter
+  - jupyterlab
+  - matplotlib
+  - numpy
+  - pandas
+  - pip
+  - pylint
+  - requests
+  - scikit-learn
+  - scipy
+  - seaborn
+  - setuptools
+  - statsmodels
+  - xlrd
+  - pip:
+    - lxml
+    - geopy
