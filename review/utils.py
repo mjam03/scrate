@@ -1,13 +1,16 @@
 import numpy as np
 import re
 import time
+from typing import Tuple
 
+from selenium.webdriver import Chrome
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import BaseWebElement
 
 
-def click_element(driver, element):
+def click_element(driver: Chrome, element: BaseWebElement) -> None:
     # move to the element
     ActionChains(driver).move_to_element(element).perform()
     # add random delay to mask immediate click
@@ -18,12 +21,14 @@ def click_element(driver, element):
     return
 
 
-def literal_search(driver):
-    # force the search to be literal (to avoid ambiguous station names) if Google corrects search term
+def literal_search(driver: Chrome) -> None:
+    # force search to be literal (to avoid ambiguous names) if Google corrects
     try:
         # find link referring to original search term
-        check_correction_link = driver.find_elements(
-            By.CSS_SELECTOR, 'input[jsaction="pane.correctionSection.originalQueryClick"]')
+        check_correction_link: list = driver.find_elements(
+            By.CSS_SELECTOR,
+            'input[jsaction="pane.correctionSection.originalQueryClick"]',
+        )
         # click on it
         check_correction_link[0].click()
     except:
@@ -31,31 +36,35 @@ def literal_search(driver):
     return
 
 
-def get_geo(driver):
+def get_geo(driver: Chrome) -> Tuple[float, float]:
     # get gmaps url which contains lat and long
-    url = driver.current_url
+    url: str = driver.current_url
     # use regex to strip them, make floats and return
-    geocode = re.search(r'(?<=/@)(.*?),(.*?)(?=,)', url)[0]
-    latitude = float(geocode.split(',')[0])
-    longitude = float(geocode.split(',')[1])
-    return latitude, longitude
+    geocode = re.search(r"(?<=/@)(.*?),(.*?)(?=,)", url)[0]
+    latitude = float(geocode.split(",")[0])
+    longitude = float(geocode.split(",")[1])
+    return (latitude, longitude)
 
 
-def scroll_down_section(driver, css_identifier):
+def scroll_down_section(driver: Chrome, css_identifier: str) -> None:
     try:
-        results_box = driver.find_element(By.CSS_SELECTOR, css_identifier)
+        results_box: BaseWebElement = driver.find_element(
+            By.CSS_SELECTOR, css_identifier
+        )
         driver.execute_script(
-            "arguments[0].scrollTo(0, arguments[0].scrollHeight)", results_box)
+            "arguments[0].scrollTo(0, arguments[0].scrollHeight)", results_box
+        )
         random_delay(2)
     except NoSuchElementException:
-        print('Cannot find results box to scroll down')
+        print("Cannot find results box to scroll down")
     return
 
 
-def back_to_results(driver):
-    # finds back button in top left of search bar and clicks it to return to google maps results
-    back_button = driver.find_elements(
-        By.XPATH, "//button[contains(@aria-label, 'Back')]")[-1]
+def back_to_results(driver: Chrome) -> None:
+    # finds back button in top left of search bar and clicks it
+    back_button: BaseWebElement = driver.find_elements(
+        By.XPATH, "//button[contains(@aria-label, 'Back')]"
+    )[-1]
     ActionChains(driver).move_to_element(back_button).perform()
     # add random delay to mask immediate click
     random_delay(1, 0.5)
@@ -64,9 +73,12 @@ def back_to_results(driver):
     return
 
 
-def random_delay(constant, var=1, min_delay=0.5, max_delay=10):
+def random_delay(
+    constant: float, var: float = 1, min_delay: float = 0.5, max_delay: float = 10
+) -> None:
     # create a random delay to mask automated behaviour
-    delay = constant + np.random.uniform(-1, 1)*var
+    delay: float = constant + np.random.uniform(-1, 1) * var
     delay = np.max([min_delay, delay])
     delay = np.min([max_delay, delay])
-    return time.sleep(delay)
+    time.sleep(delay)
+    return
