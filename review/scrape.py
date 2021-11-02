@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import logging
 
 # import selenium functions for chrome driver manipulation
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -12,6 +13,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from review.utils import (
     back_to_results,
     click_element,
+    get_element_al_by_xpath,
+    get_element_text_by_css,
     random_delay,
     scroll_down_section,
 )
@@ -55,61 +58,41 @@ def scrape_general_info(driver: Chrome) -> dict:
         general_info["name"] = soup.findAll("title")[0].text.replace(
             " - Google Maps", ""
         )
-    except:
+    except IndexError:
         general_info["name"] = ""
-
     # get place category
-    try:
-        general_info["category"] = driver.find_element(
-            By.CSS_SELECTOR, 'button[jsaction="pane.rating.category"]'
-        ).text
-    except:
-        general_info["category"] = ""
-
+    cat_css = 'button[jsaction="pane.rating.category"]'
+    general_info["category"] = get_element_text_by_css(driver, cat_css)
     # get price as count
-    try:
-        general_info["price"] = len(
-            driver.find_element(By.CSS_SELECTOR, 'span[aria-label*="Price"]').text
-        )
-    except:
-        general_info["price"] = 0
-
+    price_css = 'span[aria-label*="Price"]'
+    general_info["price"] = len(get_element_text_by_css(driver, price_css))
+    # get review count
+    rc_css = 'button[jsaction="pane.rating.moreReviews"]'
+    rc_raw: str = get_element_text_by_css(driver, rc_css)
+    if rc_raw == "":
+        rc = 0
+    else:
+        rc = int(rc_raw.replace(" reviews", "").replace(",", ""))
+    general_info["review_count"] = rc
     # get overall rating
-    try:
-        review_count_raw = driver.find_element(
-            By.CSS_SELECTOR, 'button[jsaction="pane.rating.moreReviews"]'
-        ).text
-
-        general_info["review_count"] = int(
-            review_count_raw.replace(" reviews", "").replace(",", "")
-        )
-    except:
-        general_info["review_count"] = 0
-
-    try:
-        rating_raw = driver.find_element(
-            By.XPATH, "//ol[contains(@aria-label,'stars')]"
-        ).get_attribute("aria-label")
-        rating_raw = float(rating_raw.replace("stars", "").replace(" ", ""))
-        general_info["rating"] = rating_raw
-    except:
-        general_info["rating"] = 0.0
-
+    rating_xp = "//ol[contains(@aria-label,'stars')]"
+    rating_raw = get_element_al_by_xpath(driver, rating_xp)
+    if rating_raw == "":
+        rating = 0.0
+    else:
+        rating = float(rating_raw.replace("stars", "").replace(" ", ""))
+        general_info["rating"] = rating
     # get rating distribution
-    try:
-        general_info["rating_dist"] = get_rating_dist(soup)
-    except:
-        general_info["rating_dist"] = []
-
+    general_info["rating_dist"] = get_rating_dist(soup)
     # get opening hours
-    try:
-        opening_hours_raw = driver.find_element(
-            By.XPATH, "//div[contains(@aria-label, 'Saturday')]"
-        ).get_attribute("aria-label")
-        general_info["opening_hours"] = opening_hours_raw.split(".")[0].split(";")
-    except:
-        general_info["opening_hours"] = ""
-
+    op_hours_xp = "//div[contains(@aria-label, 'Saturday')]"
+    op_hours_raw = get_element_al_by_xpath(driver, op_hours_xp)
+    if op_hours_raw == "":
+        general_info["opening_hours"] = []
+    else:
+        op_hours = op_hours_raw.split(".")[0].split(";")
+        general_info["opening_hours"] = op_hours
+    # return our data
     return general_info
 
 
@@ -124,10 +107,10 @@ def scrape_reviews(driver: Chrome, max_reviews: int) -> list:
         )
         # click it
         click_element(driver, reviews_button)
-    except:
-        print("Unable to locate the 'More reviews' button")
+    except NoSuchElementException:
+        logger.error("Unable to locate the 'More reviews' button")
 
-    # now we have clicked it, let's scroll down until we can identify enough review elements
+    # now we have clicked it, scroll down until can id enough reviews
     # check we have some reviews loaded
     reviews_exist = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located(
@@ -168,10 +151,10 @@ def scrape_reviews(driver: Chrome, max_reviews: int) -> list:
             #     review['reviewer_count'] = 1
             # else:
             review["reviewer_count"] = int(reviewer_review_count)
-            rating = r.find_element(
-                By.XPATH, "//span[contains(@aria-label, 'stars')]"
-            ).get_attribute("aria-label")
-            review["rating"] = int(rating.replace("stars", "").replace(" ", ""))
+            rt_xp = "//span[contains(@aria-label, 'stars')]"
+            rt = get_element_al_by_xpath(driver, rt_xp)
+            rt = rt.replace("stars", "").replace(" ", "")
+            review["rating"] = int(rt)
             reviews.append(review)
 
     # now let's go back out of the reviews section

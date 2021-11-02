@@ -1,5 +1,6 @@
 import numpy as np
 import re
+from review import get_module_logger
 import time
 from typing import Tuple
 
@@ -8,6 +9,9 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import BaseWebElement
+
+# set logger for this module
+logger = get_module_logger(__name__)
 
 
 def click_element(driver: Chrome, element: BaseWebElement) -> None:
@@ -31,7 +35,7 @@ def literal_search(driver: Chrome) -> None:
         )
         # click on it
         check_correction_link[0].click()
-    except:
+    except IndexError:
         pass
     return
 
@@ -56,7 +60,19 @@ def scroll_down_section(driver: Chrome, css_identifier: str) -> None:
         )
         random_delay(2)
     except NoSuchElementException:
-        print("Cannot find results box to scroll down")
+        logger.error("Cannot find results box to scroll down reviews")
+    return
+
+
+def scroll_down_results(driver: Chrome, x_path: str) -> None:
+    try:
+        results_box: BaseWebElement = driver.find_element(By.XPATH, x_path)
+        driver.execute_script(
+            "arguments[0].scrollTo(0, arguments[0].scrollHeight)", results_box
+        )
+        random_delay(2)
+    except NoSuchElementException:
+        logger.error("Cannot find results box to scroll down")
     return
 
 
@@ -74,11 +90,31 @@ def back_to_results(driver: Chrome) -> None:
 
 
 def random_delay(
-    constant: float, var: float = 1, min_delay: float = 0.5, max_delay: float = 10
+    c: float, var: float = 1, min_d: float = 0.5, max_d: float = 10
 ) -> None:
     # create a random delay to mask automated behaviour
-    delay: float = constant + np.random.uniform(-1, 1) * var
-    delay = np.max([min_delay, delay])
-    delay = np.min([max_delay, delay])
+    delay: float = c + np.random.uniform(-1, 1) * var
+    delay = np.max([min_d, delay])
+    delay = np.min([max_d, delay])
     time.sleep(delay)
     return
+
+
+def get_element_text_by_css(driver: Chrome, ccs_sel: str) -> str:
+
+    val = ""
+    try:
+        val = driver.find_element(By.CSS_SELECTOR, ccs_sel).text
+    except NoSuchElementException:
+        val = ""
+    return val
+
+
+def get_element_al_by_xpath(driver: Chrome, xp: str) -> str:
+
+    val = ""
+    try:
+        val = driver.find_element(By.XPATH, xp).get_attribute("aria-label")
+    except NoSuchElementException:
+        val = ""
+    return val

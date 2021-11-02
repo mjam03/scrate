@@ -1,5 +1,7 @@
 config.ini
 __pycache__
 *.egg-info
-.vscode/*
-notebooks/*
+reviews.pickle
+logs
+.vscode
+notebooks

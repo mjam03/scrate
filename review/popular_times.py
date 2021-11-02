@@ -12,21 +12,21 @@ def parse_popular_times(div: Tag, day_dict: dict) -> list:
     # get day as word from index
     day: str = day_dict[div.get("jsinstance")]
     # parse through busyness data
-    for busy_data in div.findAll("div"):
+    for d in div.findAll("div"):
         # if aria-label exists and busy is in it
-        if busy_data.get("aria-label") and "busy" in busy_data.get("aria-label"):
+        if d.get("aria-label") and "busy" in d.get("aria-label"):
             # then parse it
-            hour_data = busy_data.get("aria-label").split("% busy at ")
-            if len(hour_data) == 2:
+            b_div = d.get("aria-label").split("% busy at ")
+            if len(b_div) == 2:
                 try:
+                    dte = dt.datetime.strptime(b_div[1][:-1], "%I %p")
+                    t = dte.time()
                     pop_data.append(
                         {
                             "Day": day,
-                            "Time String": hour_data[1][:-1],
-                            "Time": dt.datetime.strptime(
-                                hour_data[1][:-1], "%I %p"
-                            ).time(),
-                            "Busyness": int(hour_data[0]),
+                            "Time String": b_div[1][:-1],
+                            "Time": t,
+                            "Busyness": int(b_div[0]),
                         }
                     )
                 except ValueError:
@@ -59,25 +59,27 @@ def scrape_popular_times(driver: Chrome):
             "5": "Fri",
             "*6": "Sat",
         }
+        d_ind = day_dict.keys()
 
         # obtain the part of the html we want
-        for div in soup.findAll("div"):
+        for d in soup.findAll("div"):
             # only get the left hand pane
-            if div.get("id") == "pane":
+            if d.get("id") == "pane":
                 # iterate through divs in the pane
-                for pane_div in div.findAll("div"):
+                for pd in d.findAll("div"):
                     # if pane_div has aria-label and it is what we want
-                    if pane_div.get(
-                        "aria-label"
-                    ) and "Popular times at" in pane_div.get("aria-label"):
+                    pt_txt = "Popular times at"
+                    if pd.get("aria-label") and pt_txt in pd.get("aria-label"):
                         # then for each div in here
-                        for pop_div in pane_div.findAll("div"):
+                        for pop_div in pd.findAll("div"):
                             # if jsinstance is one of our day indices
                             if (
                                 pop_div.get("jsinstance")
-                                and pop_div.get("jsinstance") in day_dict.keys()
+                                and pop_div.get("jsinstance") in d_ind
                             ):
                                 # then let's parse it
-                                day_data: list = parse_popular_times(pop_div, day_dict)
+                                day_data: list = parse_popular_times(
+                                    pop_div, day_dict
+                                )
                                 data.append(day_data)
         return data
