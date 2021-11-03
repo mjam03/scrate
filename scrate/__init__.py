@@ -34,7 +34,7 @@ def get_module_logger(mod_name: str) -> logging.Logger:
     # create logger
     logger = logging.getLogger(mod_name)
     # create file handler, get file address and add
-    log_fd = get_root_dir() + "/logs/review.log"
+    log_fd = get_root_dir() + "/logs/scrate.log"
     fd = logging.FileHandler(log_fd)
     logger.addHandler(fd)
     # create log format and add

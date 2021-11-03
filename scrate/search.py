@@ -9,9 +9,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 # helper functions to mask automated scrape
-from review import get_module_logger, get_root_dir
-from review.scrape import scrape_location
-from review.utils import get_geo, literal_search, random_delay
+from scrate import get_module_logger, get_root_dir
+from scrate.scrape import scrape_location
+from scrate.utils import get_geo, literal_search, random_delay
 
 # set logger for this module
 logger = get_module_logger(__name__)

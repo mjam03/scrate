@@ -1,6 +1,6 @@
 import numpy as np
 import re
-from review import get_module_logger
+from scrate import get_module_logger
 import time
 from typing import Optional, Match, Tuple
 

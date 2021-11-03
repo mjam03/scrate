@@ -1,6 +1,5 @@
 # import usuals
 from bs4 import BeautifulSoup
-import logging
 from typing import Tuple
 
 # import selenium functions for chrome driver manipulation
@@ -11,8 +10,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 # helper functions to mask automated scrape
-from review.popular_times import scrape_popular_times
-from review.utils import (
+from scrate import get_module_logger
+from scrate.popular_times import scrape_popular_times
+from scrate.utils import (
     back_to_results,
     click_element,
     get_element_al_by_xpath,
@@ -24,7 +24,7 @@ from review.utils import (
 )
 
 # set logger for this module
-logger = logging.getLogger(__name__)
+logger = get_module_logger(__name__)
 
 
 def get_rating_dist(soup: BeautifulSoup) -> list:

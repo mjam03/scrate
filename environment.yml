@@ -1,4 +1,4 @@
-name: review
+name: scrate
 channels:
   - conda-forge
   - defaults
