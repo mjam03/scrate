@@ -34,16 +34,16 @@ def parse_popular_times(div: Tag, day_dict: dict) -> list:
     return pop_data
 
 
-def scrape_popular_times(driver: Chrome):
+def scrape_popular_times(driver: Chrome) -> list:
 
     # check if popular times data exists on the page
     popular_times_elements: list = driver.find_elements(
         By.XPATH, "//div[contains(@aria-label, 'Popular times at')]"
     )
 
+    data = []
     # if so then let's get going
     if len(popular_times_elements) > 0:
-        data = []
 
         # use beautiful soup to parse
         page_content: str = driver.page_source
@@ -82,4 +82,4 @@ def scrape_popular_times(driver: Chrome):
                                     pop_div, day_dict
                                 )
                                 data.append(day_data)
-        return data
+    return data

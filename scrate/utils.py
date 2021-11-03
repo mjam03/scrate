@@ -1,6 +1,5 @@
 import numpy as np
 import re
-from scrate import get_module_logger
 import time
 from typing import Optional, Match, Tuple
 
@@ -9,6 +8,8 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import BaseWebElement
+
+from scrate import get_module_logger
 
 # set logger for this module
 logger = get_module_logger(__name__)

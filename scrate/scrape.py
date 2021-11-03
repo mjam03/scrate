@@ -1,6 +1,6 @@
 # import usuals
 from bs4 import BeautifulSoup
-from typing import Tuple
+from typing import Dict, Tuple
 
 # import selenium functions for chrome driver manipulation
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
@@ -179,7 +179,7 @@ def scrape_location(
 ) -> dict:
 
     # vars to keep track of our results
-    results = {}
+    results: Dict[str, dict] = {}
     page_results_processed = 0
     close_enough = True
 

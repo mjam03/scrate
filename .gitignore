@@ -5,3 +5,6 @@ reviews.pickle
 logs
 .vscode
 notebooks
+build
+dist
+.DS_Store

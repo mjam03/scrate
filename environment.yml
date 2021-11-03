@@ -17,6 +17,7 @@ dependencies:
   - scikit-learn
   - scipy
   - seaborn
+  - selenium
   - setuptools
   - statsmodels
   - xlrd
