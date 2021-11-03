@@ -2,7 +2,7 @@ import numpy as np
 import re
 from review import get_module_logger
 import time
-from typing import Tuple
+from typing import Optional, Match, Tuple
 
 from selenium.webdriver import Chrome
 from selenium.common.exceptions import NoSuchElementException
@@ -44,7 +44,12 @@ def get_geo(driver: Chrome) -> Tuple[float, float]:
     # get gmaps url which contains lat and long
     url: str = driver.current_url
     # use regex to strip them, make floats and return
-    geocode = re.search(r"(?<=/@)(.*?),(.*?)(?=,)", url)[0]
+    url_code: Optional[Match[str]] = re.search(r"(?<=/@)(.*?),(.*?)(?=,)", url)
+    if url_code is not None:
+        geocode: str = url_code[0]
+    else:
+        logger.error("Cannot strip lat and long from url: {}".format(url))
+        return (0.0, 0.0)
     latitude = float(geocode.split(",")[0])
     longitude = float(geocode.split(",")[1])
     return (latitude, longitude)
@@ -83,9 +88,9 @@ def back_to_results(driver: Chrome) -> None:
     )[-1]
     ActionChains(driver).move_to_element(back_button).perform()
     # add random delay to mask immediate click
-    random_delay(1, 0.5)
+    random_delay(0.75, 0.25)
     driver.execute_script("arguments[0].click();", back_button)
-    random_delay(1, 0.5)
+    random_delay(0.75, 0.25)
     return
 
 
